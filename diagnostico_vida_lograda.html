@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Una Vida Lograda — Diagnóstico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #211b17;
+    --paper: #efe6d8;
+    --paper-dim: #e4d9c6;
+    --gold: #c08a3e;
+    --gold-soft: rgba(192,138,62,0.18);
+    --low: #b15a3e;
+    --low-soft: rgba(177,90,62,0.14);
+    --high: #3f6e52;
+    --high-soft: rgba(63,110,82,0.14);
+    --text-muted: #8a7f6f;
+    --line: rgba(239,230,216,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:56px 24px 100px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin:0 0 14px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(32px,5vw,46px);
+    line-height:1.08;
+    margin:0 0 18px;
+    letter-spacing:-0.01em;
+  }
+  .lede{
+    font-size:17px;
+    line-height:1.6;
+    color:#d9cfbf;
+    max-width:58ch;
+    margin:0 0 12px;
+  }
+  .divider{
+    border:none;
+    border-top:1px solid var(--line);
+    margin:36px 0;
+  }
+
+  /* Intro screen */
+  #screen-intro .compass-hero{
+    display:flex;
+    justify-content:center;
+    margin:32px 0 8px;
+  }
+  .dim-list{
+    list-style:none;
+    padding:0;
+    margin:28px 0;
+    display:grid;
+    gap:0;
+  }
+  .dim-list li{
+    display:flex;
+    align-items:baseline;
+    gap:16px;
+    padding:14px 0;
+    border-top:1px solid var(--line);
+    font-size:15px;
+  }
+  .dim-list li:last-child{border-bottom:1px solid var(--line);}
+  .dim-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--gold);
+    min-width:22px;
+  }
+  .dim-name{font-family:'Fraunces',serif;font-size:17px;font-weight:500;}
+  .dim-hint{color:var(--text-muted);font-size:13px;margin-left:auto;text-align:right;max-width:280px;}
+
+  button.primary{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    background:var(--gold);
+    color:var(--ink);
+    border:none;
+    border-radius:3px;
+    padding:14px 26px;
+    cursor:pointer;
+    transition:transform 0.15s ease, background 0.15s ease;
+  }
+  button.primary:hover{background:#d29b52;}
+  button.primary:active{transform:scale(0.98);}
+  button.ghost{
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    font-size:14px;
+    background:transparent;
+    color:var(--paper);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:13px 22px;
+    cursor:pointer;
+  }
+  button.ghost:hover{border-color:var(--gold);color:var(--gold);}
+  button:disabled{opacity:0.35;cursor:not-allowed;}
+
+  .cta-row{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;}
+
+  /* Assessment screen */
+  #screen-quiz{display:none;}
+  .progress-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+  }
+  .progress-head .stage{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--text-muted);
+  }
+  .track{
+    height:2px;
+    background:var(--line);
+    margin-bottom:34px;
+    position:relative;
+  }
+  .track-fill{
+    position:absolute;top:0;left:0;height:100%;
+    background:var(--gold);
+    transition:width 0.3s ease;
+  }
+  .q-block{
+    padding:22px 0;
+    border-top:1px solid var(--line);
+  }
+  .q-block:last-of-type{border-bottom:1px solid var(--line);}
+  .q-text{
+    font-family:'Fraunces',serif;
+    font-size:18px;
+    line-height:1.4;
+    margin:0 0 16px;
+  }
+  .scale-row{
+    display:flex;
+    gap:8px;
+  }
+  .scale-btn{
+    flex:1;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--paper);
+    border-radius:3px;
+    padding:10px 4px;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    cursor:pointer;
+    text-align:center;
+    transition:all 0.12s ease;
+  }
+  .scale-btn:hover{border-color:var(--gold);}
+  .scale-btn.selected{
+    background:var(--gold-soft);
+    border-color:var(--gold);
+    color:var(--gold);
+    font-weight:600;
+  }
+  .scale-caption{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--text-muted);
+    margin-top:6px;
+    letter-spacing:0.03em;
+  }
+  .legend-fixed{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-bottom:6px;
+  }
+
+  /* Results screen */
+  #screen-results{display:none;}
+  .compass-wrap{
+    display:flex;
+    justify-content:center;
+    margin:12px 0 30px;
+  }
+  .global-score{
+    text-align:center;
+    margin-bottom:8px;
+  }
+  .global-score .num{
+    font-family:'Fraunces',serif;
+    font-size:64px;
+    font-weight:600;
+    line-height:1;
+    color:var(--gold);
+  }
+  .global-score .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--text-muted);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-top:6px;
+  }
+  .dim-results{
+    display:grid;
+    gap:0;
+    margin:30px 0;
+  }
+  .dim-result-row{
+    padding:18px 0;
+    border-top:1px solid var(--line);
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    gap:10px;
+  }
+  .dim-result-row:last-child{border-bottom:1px solid var(--line);}
+  .dim-result-name{font-family:'Fraunces',serif;font-size:16px;}
+  .dim-result-comment{font-size:12.5px;color:var(--text-muted);margin-top:3px;}
+  .dim-result-score{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:20px;
+    text-align:right;
+    min-width:64px;
+  }
+  .bar-bg{
+    grid-column:1 / -1;
+    height:4px;
+    background:var(--line);
+    border-radius:2px;
+    overflow:hidden;
+    margin-top:2px;
+  }
+  .bar-fill{height:100%;border-radius:2px;}
+
+  .focus-card{
+    background:var(--paper-dim);
+    color:var(--ink);
+    border-radius:6px;
+    padding:26px 26px 22px;
+    margin:34px 0;
+  }
+  .focus-card .kicker{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--low);
+    margin:0 0 8px;
+  }
+  .focus-card h3{
+    font-family:'Fraunces',serif;
+    font-size:22px;
+    margin:0 0 14px;
+  }
+  .focus-card .extreme-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--high);
+    margin:14px 0 8px;
+  }
+  .focus-card ul{margin:0;padding-left:18px;}
+  .focus-card li{font-size:14.5px;line-height:1.55;margin-bottom:6px;}
+
+  .save-note{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin-top:24px;
+  }
+
+  a.textlink{color:var(--gold);}
+  @media (max-width:560px){
+    .scale-row{flex-wrap:wrap;}
+    .scale-btn{flex:1 1 30%;}
+    .dim-hint{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- INTRO -->
+  <section id="screen-intro">
+    <p class="eyebrow">Una Vida Lograda · Autoevaluación</p>
+    <h1>¿Qué tan encaminada está tu vida lograda?</h1>
+    <p class="lede">La mayoría de las personas nunca se detienen a examinar si su vida tiene la dirección que realmente quieren, hasta que una crisis las obliga a hacerlo. Este diagnóstico invierte ese orden: te da un espacio deliberado para revisar, antes de cualquier crisis, qué tan alineada está tu vida cotidiana con lo que de verdad te da sentido.</p>
+    <p class="lede">Son 35 preguntas organizadas en 7 dimensiones —desde cómo usas tu tiempo hasta qué lugar ocupan la verdad, el amor y la comunidad en tus decisiones—. No es un examen para aprobar ni una etiqueta que se te pone: es una brújula. Al final verás tu puntaje por área y una descripción concreta de a qué se parece el punto más alto de desarrollo en tu área más débil, para que puedas convertirlo en un plan de trabajo real.</p>
+
+    <div class="compass-hero">
+      <svg id="hero-compass" width="220" height="220" viewBox="0 0 220 220"></svg>
+    </div>
+
+    <ul class="dim-list" id="dim-list"></ul>
+
+    <div class="cta-row">
+      <button class="primary" id="start-btn">Comenzar diagnóstico →</button>
+      <button class="ghost" id="resume-btn" style="display:none;">Continuar donde me quedé</button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="screen-quiz">
+    <div class="progress-head">
+      <span class="stage" id="stage-label"></span>
+      <span class="stage" id="stage-count"></span>
+    </div>
+    <div class="track"><div class="track-fill" id="track-fill"></div></div>
+    <h1 id="dim-title" style="font-size:28px;"></h1>
+    <p class="lede" id="dim-intro" style="margin-bottom:26px;"></p>
+    <p class="legend-fixed">1 nunca · 2 rara vez · 3 a veces · 4 frecuentemente · 5 siempre</p>
+    <div id="q-container"></div>
+    <div class="cta-row" style="margin-top:30px;">
+      <button class="ghost" id="prev-btn">← Anterior</button>
+      <button class="primary" id="next-btn">Siguiente →</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="screen-results">
+    <p class="eyebrow">Tu diagnóstico</p>
+    <h1>Resultado</h1>
+    <div class="global-score">
+      <div class="num" id="global-num">–</div>
+      <div class="label" id="global-label">puntaje global sobre 10</div>
+    </div>
+    <div class="compass-wrap">
+      <svg id="result-compass" width="320" height="320" viewBox="0 0 320 320"></svg>
+    </div>
+    <div class="dim-results" id="dim-results"></div>
+
+    <div class="focus-card" id="focus-card"></div>
+
+    <div class="cta-row">
+      <button class="ghost" id="retake-btn">Repetir diagnóstico</button>
+      <button class="ghost" id="copy-btn">Copiar resumen de resultados</button>
+    </div>
+    <p class="save-note">Tus respuestas se guardan solo en este dispositivo mientras tengas esta página abierta o la conserves guardada; no se envían a ningún servidor.</p>
+  </section>
+
+</div>
+
+<script>
+const scaleLabels = ["Nunca","Rara vez","A veces","Frecuentemente","Siempre"];
+
+const dims = [
+  {id:"operacion", label:"Operación vs. producción",
+   hint:"Producir resultados externos vs. acciones que te configuran por dentro.",
+   intro:"Distingue entre actuar para obtener un resultado externo (producción) y actuar de un modo que te configura por dentro (operación).",
+   qs:[
+    "Cuando actúo, me importa más el proceso que el resultado externo.",
+    "Digo la verdad aunque me cueste.",
+    "Mi trabajo diario me forma como persona, no solo produce resultados.",
+    "Distingo entre hacer cosas y hacerme a mí mismo a través de lo que hago.",
+    "Encuentro mi valor principalmente en quién soy, más que en logros externos (dinero, título, reconocimiento)."
+   ],
+   bajo:[
+    "Vive centrado en producir resultados externos (dinero, títulos, aprobación) como medida principal de éxito.",
+    "Ajusta o maquilla la verdad cuando conviene al resultado.",
+    "El trabajo se vive solo como medio para un fin externo, sin valor en sí mismo.",
+    "No hay distinción entre \"lo que hago\" y \"quién soy\": el yo depende del desempeño."
+   ],
+   alto:[
+    "La verdad rige sus palabras y decisiones incluso cuando tiene un costo real.",
+    "Cada acción, grande o pequeña, se entiende como una oportunidad de configurarse a sí mismo.",
+    "El resultado externo importa, pero nunca a costa de traicionar los propios principios.",
+    "Hay una integración estable entre la ética privada y el desempeño público: actúa igual lo vea alguien o no."
+   ]},
+  {id:"caracter", label:"Carácter y virtud",
+   hint:"Hábitos y coherencia, más allá del temperamento biológico.",
+   intro:"El carácter se adquiere a golpe de acciones acertadas; el temperamento, en cambio, es biológico y no elegido.",
+   qs:[
+    "Repito buenos hábitos aunque no tenga ganas en el momento.",
+    "Corrijo mis errores de comportamiento con el tiempo.",
+    "Actúo según principios, no solo por impulso o estado de ánimo.",
+    "Reconozco y trabajo activamente mis defectos de carácter.",
+    "Mis acciones diarias concuerdan con quien quiero ser."
+   ],
+   bajo:[
+    "Las decisiones dependen del estado de ánimo o el impulso del momento.",
+    "Se repiten los mismos errores de comportamiento sin corregirlos con el tiempo.",
+    "El temperamento (reactividad, impaciencia, etc.) domina sobre la voluntad.",
+    "Hay incoherencia notoria entre lo que se dice creer y cómo se actúa."
+   ],
+   alto:[
+    "Los buenos hábitos son ya automáticos: no exigen un esfuerzo de voluntad constante.",
+    "Existe un historial verificable de defectos concretos corregidos, no solo la intención de corregirlos.",
+    "El comportamiento se sostiene igual bajo presión, cansancio o comodidad.",
+    "El carácter forjado permite predecir la propia conducta incluso ante situaciones nuevas."
+   ]},
+  {id:"riquezas", label:"Riquezas internas",
+   hint:"Verdad, amor y belleza frente a poder, dinero y fama.",
+   intro:"La plenitud no se agota en bienes utilitarios (poder, dinero, fama), sino en la verdad, el amor y la belleza.",
+   qs:[
+    "Busco la verdad aunque sea incómoda.",
+    "El amor (dar, cuidar, comprometerme) ocupa un lugar central en mi vida.",
+    "Cultivo la belleza (arte, lectura, música, naturaleza) con regularidad.",
+    "Mis decisiones importantes se guían por mis valores, más que por el dinero o el estatus.",
+    "Me siento pleno por lo que soy, no solo por lo que tengo."
+   ],
+   bajo:[
+    "Las decisiones importantes (trabajo, pareja, dinero) se toman por estatus, prestigio o ingreso.",
+    "El arte, la contemplación o el silencio se sienten como \"pérdida de tiempo\".",
+    "La autoestima depende casi por completo de la comparación con otros.",
+    "No hay una práctica sostenida de cultivo interior."
+   ],
+   alto:[
+    "La verdad, el amor y la belleza operan como criterios reales, no solo aspiracionales, al decidir.",
+    "Existe una práctica regular de cultivo interior (lectura, arte, silencio, contemplación).",
+    "El sentido de valía personal resiste una pérdida de estatus o dinero sin derrumbarse.",
+    "Las relaciones de amor y entrega ocupan un lugar central, no marginal, en la vida diaria."
+   ]},
+  {id:"sentido", label:"Sentido y propósito",
+   hint:"La fuerza motivadora central según Frankl.",
+   intro:"La principal fuerza motivadora del ser humano es hallar un propósito (Frankl); su ausencia produce vacío existencial.",
+   qs:[
+    "Tengo claro para qué me levanto cada mañana.",
+    "Sé qué contribución quiero dejar en el mundo.",
+    "Encuentro sentido incluso en dificultades o sufrimiento.",
+    "Mis actividades diarias conectan con algo que realmente me importa.",
+    "Siento que mi vida tiene sentido y dirección."
+   ],
+   bajo:[
+    "Aparece con frecuencia la pregunta \"¿para qué hago esto?\" sin respuesta clara.",
+    "El trabajo y las actividades diarias se sienten desconectados de cualquier propósito mayor.",
+    "El sufrimiento se vive como algo absurdo, sin lugar ni sentido posible.",
+    "No hay ninguna narrativa personal que dé continuidad a las propias decisiones."
+   ],
+   alto:[
+    "Existe una razón de ser (ikigai) que la persona puede articular en pocas frases.",
+    "El propósito orienta tanto las decisiones grandes (carrera, relaciones) como las pequeñas (uso del día).",
+    "Incluso la adversidad y el sufrimiento se integran como parte de una historia con sentido.",
+    "Hay una sensación estable de dirección, no solo de actividad."
+   ]},
+  {id:"tiempo", label:"Uso del tiempo",
+   hint:"La \"ocupada desidia\" que describe Séneca.",
+   intro:"Séneca: no es que la vida sea breve, sino que perdemos mucho tiempo en la \"ocupada desidia\".",
+   qs:[
+    "Vivo el presente en vez de posponerlo todo para más adelante.",
+    "Priorizo actividades con sentido por encima de ocupaciones superfluas.",
+    "Organizo mis días con intención, no solo reacciono a lo urgente.",
+    "Acepto con calma que mi tiempo es limitado.",
+    "Dedico tiempo real a lo que importa, más que a lo urgente."
+   ],
+   bajo:[
+    "La vida se organiza en torno al \"cuando...\" (cuando gane más, cuando me jubile, cuando tenga tiempo).",
+    "La agenda está saturada de urgencias ajenas y ocupaciones superfluas.",
+    "Pensar en la finitud del tiempo genera angustia difusa que se evita a toda costa.",
+    "Rara vez hay una revisión consciente de en qué se está invirtiendo el tiempo."
+   ],
+   alto:[
+    "Cada jornada se organiza con intención, casi como si fuera completa en sí misma.",
+    "Hay capacidad real de decir no a lo urgente-pero-no-importante.",
+    "La finitud del tiempo se acepta con serenidad, y esa aceptación libera en vez de paralizar.",
+    "Existe un hábito periódico de revisar en qué se ha invertido el tiempo y ajustar el rumbo."
+   ]},
+  {id:"cotidiano", label:"Vida cotidiana",
+   hint:"Familia, trabajo y relaciones, el terreno real de la plenitud.",
+   intro:"La plenitud se fragua en las realidades diarias: familia, trabajo profesional y relaciones sociales.",
+   qs:[
+    "Disfruto y cuido mis relaciones familiares.",
+    "Vivo mi trabajo cotidiano con sentido, no solo como obligación.",
+    "Cultivo relaciones sociales sólidas y de calidad.",
+    "Encuentro estados de concentración plena (flow) con cierta frecuencia.",
+    "Practico moderación en mi día a día (comida, trabajo, ocio)."
+   ],
+   bajo:[
+    "La familia y las relaciones cercanas se viven como obligación o fuente de conflicto crónico.",
+    "El trabajo se percibe únicamente como medio de subsistencia, sin ningún significado propio.",
+    "Los estados de concentración plena (flow) son raros o inexistentes.",
+    "Hay excesos habituales y poco cuestionados (comida, trabajo, ocio, pantallas)."
+   ],
+   alto:[
+    "Las relaciones cercanas son una fuente estable de sentido y disfrute, más allá de los conflictos normales.",
+    "El trabajo diario, aunque incluya tareas tediosas, se vive con propósito.",
+    "El estado de flow aparece con cierta regularidad en al menos un área significativa de la vida.",
+    "Existe una moderación natural (no forzada) en los apetitos y hábitos cotidianos."
+   ]},
+  {id:"comunidad", label:"Dimensión comunitaria",
+   hint:"La plenitud se halla fuera de uno mismo, en la donación.",
+   intro:"El ser humano solo halla su plenitud fuera de sí mismo, en la donación y el compromiso con los demás.",
+   qs:[
+    "Participo activamente en algo más grande que yo (comunidad, causa, familia).",
+    "Me comprometo con los demás más allá de mi interés propio.",
+    "Contribuyo al bien común de mi entorno (barrio, empresa, país).",
+    "Busco el bien de los demás, no solo el mío.",
+    "Mi vida tiene una dimensión de donación, no solo de recepción."
+   ],
+   bajo:[
+    "La vida gira casi exclusivamente en torno al interés propio.",
+    "No existe compromiso sostenido con nada más grande que uno mismo (comunidad, causa, país).",
+    "Las relaciones con otros son sobre todo transaccionales.",
+    "El bien común no entra en las decisiones personales importantes."
+   ],
+   alto:[
+    "Hay una entrega sostenida a algo o alguien más allá de uno mismo (familia extendida, comunidad, causa, país).",
+    "El bien común pesa de forma explícita en las decisiones personales.",
+    "Las relaciones combinan cercanía genuina con compromiso real, no solo utilidad mutua.",
+    "La persona experimenta que se encuentra a sí misma precisamente al donarse a los demás."
+   ]}
+];
+
+const SCALE_MIN = 1;
+const SCALE_MAX = 5;
+
+let current = 0;
+let answers = {};
+dims.forEach(d => { answers[d.id] = new Array(5).fill(null); });
+
+const screenIntro = document.getElementById("screen-intro");
+const screenQuiz = document.getElementById("screen-quiz");
+const screenResults = document.getElementById("screen-results");
+
+// ---------- storage ----------
+async function saveProgress(){
+  try{
+    if(window.storage){
+      await window.storage.set("vidalograda-answers", JSON.stringify({answers, current}), false);
+    }
+  }catch(e){}
+}
+async function loadProgress(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get("vidalograda-answers", false);
+      if(res && res.value){
+        const parsed = JSON.parse(res.value);
+        if(parsed.answers){
+          answers = parsed.answers;
+          current = parsed.current || 0;
+          const hasAny = Object.values(answers).some(arr => arr.some(v => v !== null));
+          if(hasAny){
+            document.getElementById("resume-btn").style.display = "inline-block";
+          }
+        }
+      }
+    }
+  }catch(e){}
+}
+
+// ---------- intro dim list ----------
+function renderIntroList(){
+  const list = document.getElementById("dim-list");
+  list.innerHTML = "";
+  dims.forEach((d,i) => {
+    const li = document.createElement("li");
+    li.innerHTML = '<span class="dim-num">0'+(i+1)+'</span><span class="dim-name">'+d.label+'</span><span class="dim-hint">'+d.hint+'</span>';
+    list.appendChild(li);
+  });
+}
+
+// ---------- compass (hero, decorative) ----------
+function drawHeroCompass(){
+  const svg = document.getElementById("hero-compass");
+  const cx=110, cy=110, r=86;
+  let html = '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(239,230,216,0.18)" stroke-width="1"/>';
+  html += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*0.6)+'" fill="none" stroke="rgba(239,230,216,0.1)" stroke-width="1"/>';
+  const n = 7;
+  for(let i=0;i<n;i++){
+    const ang = (Math.PI*2*i/n) - Math.PI/2;
+    const x2 = cx + r*Math.cos(ang);
+    const y2 = cy + r*Math.sin(ang);
+    html += '<line x1="'+cx+'" y1="'+cy+'" x2="'+x2+'" y2="'+y2+'" stroke="rgba(239,230,216,0.14)" stroke-width="1"/>';
+    const dotR = 3 + (i%3);
+    html += '<circle cx="'+x2+'" cy="'+y2+'" r="'+dotR+'" fill="#c08a3e" opacity="'+(0.5+0.5*(i/n))+'"/>';
+  }
+  html += '<circle cx="'+cx+'" cy="'+cy+'" r="3.5" fill="#efe6d8"/>';
+  svg.innerHTML = html;
+}
+
+// ---------- quiz rendering ----------
+function renderStage(){
+  const d = dims[current];
+  document.getElementById("stage-label").textContent = "Dimensión " + (current+1);
+  document.getElementById("stage-count").textContent = (current+1) + " / " + dims.length;
+  document.getElementById("track-fill").style.width = Math.round((current/dims.length)*100) + "%";
+  document.getElementById("dim-title").textContent = d.label;
+  document.getElementById("dim-intro").textContent = d.intro;
+
+  const container = document.getElementById("q-container");
+  container.innerHTML = "";
+  d.qs.forEach((q,i) => {
+    const block = document.createElement("div");
+    block.className = "q-block";
+    let btnsHtml = "";
+    for(let v=SCALE_MIN; v<=SCALE_MAX; v++){
+      const sel = answers[d.id][i] === v ? " selected" : "";
+      btnsHtml += '<button class="scale-btn'+sel+'" data-dim="'+d.id+'" data-q="'+i+'" data-v="'+v+'">'+v+'</button>';
+    }
+    block.innerHTML = '<p class="q-text">'+q+'</p><div class="scale-row">'+btnsHtml+'</div>';
+    container.appendChild(block);
+  });
+
+  container.querySelectorAll(".scale-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const dimId = btn.getAttribute("data-dim");
+      const qi = parseInt(btn.getAttribute("data-q"),10);
+      const v = parseInt(btn.getAttribute("data-v"),10);
+      answers[dimId][qi] = v;
+      container.querySelectorAll('.scale-btn[data-dim="'+dimId+'"][data-q="'+qi+'"]').forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      saveProgress();
+      updateNextState();
+    });
+  });
+
+  document.getElementById("prev-btn").style.visibility = current === 0 ? "hidden" : "visible";
+  updateNextState();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function updateNextState(){
+  const d = dims[current];
+  const allAnswered = answers[d.id].every(v => v !== null);
+  const btn = document.getElementById("next-btn");
+  btn.textContent = current === dims.length - 1 ? "Ver resultado →" : "Siguiente →";
+  btn.disabled = !allAnswered;
+}
+
+document.getElementById("next-btn").addEventListener("click", () => {
+  if(current < dims.length - 1){
+    current++;
+    saveProgress();
+    renderStage();
+  } else {
+    showResults();
+  }
+});
+document.getElementById("prev-btn").addEventListener("click", () => {
+  if(current > 0){
+    current--;
+    renderStage();
+  }
+});
+
+document.getElementById("start-btn").addEventListener("click", () => {
+  current = 0;
+  screenIntro.style.display = "none";
+  screenQuiz.style.display = "block";
+  renderStage();
+});
+document.getElementById("resume-btn").addEventListener("click", () => {
+  screenIntro.style.display = "none";
+  screenQuiz.style.display = "block";
+  renderStage();
+});
+
+// ---------- results ----------
+function comment(scoreOn1to5){
+  if(scoreOn1to5 <= 2.5) return "Área de siembra: apenas empieza aquí tu tarea.";
+  if(scoreOn1to5 <= 3.5) return "En camino: hay avances, con margen claro de mejora.";
+  if(scoreOn1to5 <= 4.3) return "Bien encaminado: hábito ya presente con constancia.";
+  return "Fortaleza consolidada.";
+}
+
+function scoreColor(scoreOn10){
+  if(scoreOn10 <= 4) return "var(--low)";
+  if(scoreOn10 <= 7) return "var(--gold)";
+  return "var(--high)";
+}
+
+function drawResultCompass(dimScores){
+  const svg = document.getElementById("result-compass");
+  const cx=160, cy=160, rMax=120;
+  const n = dimScores.length;
+  let html = "";
+  [0.25,0.5,0.75,1].forEach(frac => {
+    let pts = "";
+    for(let i=0;i<n;i++){
+      const ang = (Math.PI*2*i/n) - Math.PI/2;
+      pts += (cx+rMax*frac*Math.cos(ang)) + "," + (cy+rMax*frac*Math.sin(ang)) + " ";
+    }
+    html += '<polygon points="'+pts.trim()+'" fill="none" stroke="rgba(239,230,216,0.14)" stroke-width="1"/>';
+  });
+  for(let i=0;i<n;i++){
+    const ang = (Math.PI*2*i/n) - Math.PI/2;
+    const x2 = cx + rMax*Math.cos(ang);
+    const y2 = cy + rMax*Math.sin(ang);
+    html += '<line x1="'+cx+'" y1="'+cy+'" x2="'+x2+'" y2="'+y2+'" stroke="rgba(239,230,216,0.14)" stroke-width="1"/>';
+  }
+  let dataPts = "";
+  dimScores.forEach((s,i) => {
+    const ang = (Math.PI*2*i/n) - Math.PI/2;
+    const rr = rMax * (s/10);
+    dataPts += (cx+rr*Math.cos(ang)) + "," + (cy+rr*Math.sin(ang)) + " ";
+  });
+  html += '<polygon points="'+dataPts.trim()+'" fill="rgba(192,138,62,0.22)" stroke="#c08a3e" stroke-width="2"/>';
+  dimScores.forEach((s,i) => {
+    const ang = (Math.PI*2*i/n) - Math.PI/2;
+    const rr = rMax * (s/10);
+    const x = cx+rr*Math.cos(ang);
+    const y = cy+rr*Math.sin(ang);
+    html += '<circle cx="'+x+'" cy="'+y+'" r="3.5" fill="#efe6d8"/>';
+    const lx = cx + (rMax+22)*Math.cos(ang);
+    const ly = cy + (rMax+22)*Math.sin(ang);
+    html += '<text x="'+lx+'" y="'+ly+'" fill="#8a7f6f" font-size="10" font-family="IBM Plex Mono, monospace" text-anchor="middle" dominant-baseline="middle">0'+(i+1)+'</text>';
+  });
+  svg.innerHTML = html;
+}
+
+function flashCopyFeedback(success){
+  const btn = document.getElementById("copy-btn");
+  const original = "Copiar resumen de resultados";
+  btn.textContent = success ? "Copiado ✓" : "No se pudo copiar — selecciona y copia manualmente";
+  setTimeout(() => { btn.textContent = original; }, success ? 1800 : 3200);
+}
+
+function fallbackCopy(text){
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "-1000px";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+  let ok = false;
+  try{
+    ok = document.execCommand("copy");
+  }catch(e){
+    ok = false;
+  }
+  document.body.removeChild(textarea);
+  return ok;
+}
+
+function copyTextToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+    navigator.clipboard.writeText(text)
+      .then(() => flashCopyFeedback(true))
+      .catch(() => flashCopyFeedback(fallbackCopy(text)));
+  } else {
+    flashCopyFeedback(fallbackCopy(text));
+  }
+}
+
+function showResults(){
+  screenQuiz.style.display = "none";
+  screenResults.style.display = "block";
+  window.scrollTo({top:0, behavior:"smooth"});
+
+  let totalOn10 = 0;
+  let min = {label:null, on4:99, dim:null};
+  const dimScores = [];
+  const resultsList = document.getElementById("dim-results");
+  resultsList.innerHTML = "";
+
+  dims.forEach(d => {
+    const vals = answers[d.id];
+    const sum = vals.reduce((a,b) => a+b, 0);
+    const avg1to5 = sum / vals.length;
+    const on10 = ((avg1to5 - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 10;
+    dimScores.push(on10);
+    totalOn10 += on10;
+    if(avg1to5 < min.on4){ min = {label:d.label, on4:avg1to5, dim:d}; }
+
+    const row = document.createElement("div");
+    row.className = "dim-result-row";
+    const color = scoreColor(on10);
+    row.innerHTML =
+      '<div><div class="dim-result-name">'+d.label+'</div><div class="dim-result-comment">'+comment(avg1to5)+'</div></div>'+
+      '<div class="dim-result-score" style="color:'+color+'">'+on10.toFixed(1)+'</div>'+
+      '<div class="bar-bg"><div class="bar-fill" style="width:'+(on10*10)+'%; background:'+color+';"></div></div>';
+    resultsList.appendChild(row);
+  });
+
+  const globalAvg = totalOn10 / dims.length;
+  document.getElementById("global-num").textContent = globalAvg.toFixed(1);
+
+  drawResultCompass(dimScores);
+
+  const focusCard = document.getElementById("focus-card");
+  focusCard.innerHTML =
+    '<p class="kicker">Tu punto de partida</p>'+
+    '<h3>'+min.label+'</h3>'+
+    '<p style="font-size:14px; color:#4a4038; margin:0 0 4px;">'+min.dim.intro+'</p>'+
+    '<p class="extreme-label">Cómo se ve el estado del arte en esta dimensión</p>'+
+    '<ul>'+min.dim.alto.map(t => '<li>'+t+'</li>').join('')+'</ul>';
+
+  document.getElementById("retake-btn").onclick = () => {
+    dims.forEach(d => { answers[d.id] = new Array(5).fill(null); });
+    current = 0;
+    saveProgress();
+    screenResults.style.display = "none";
+    screenIntro.style.display = "block";
+    window.scrollTo({top:0});
+  };
+
+  document.getElementById("copy-btn").onclick = () => {
+    let text = "Diagnóstico Una Vida Lograda\nPuntaje global: " + globalAvg.toFixed(1) + "/10\n\n";
+    dims.forEach((d,i) => {
+      const avg1to5 = answers[d.id].reduce((a,b)=>a+b,0)/5;
+      text += (i+1) + ". " + d.label + ": " + dimScores[i].toFixed(1) + "/10 — " + comment(avg1to5) + "\n";
+    });
+    text += "\nÁrea prioritaria: " + min.label;
+    copyTextToClipboard(text);
+  };
+}
+
+// ---------- init ----------
+renderIntroList();
+drawHeroCompass();
+loadProgress();
+</script>
+</body>
+</html>
