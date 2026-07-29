@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico: Placer vs. Felicidad</title>
+<style>
+  :root{
+    --bg: #f6f5fb;
+    --paper: #ffffff;
+    --ink: #2a2836;
+    --ink-soft: #6b6980;
+    --indigo: #4a4fd6;
+    --indigo-deep: #35389e;
+    --lavender: #e7e5fb;
+    --amber: #d99a3e;
+    --amber-soft: #f6e9d3;
+    --line: #e3e1f0;
+    --radius: 14px;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(74,79,214,0.06), transparent 40%),
+      radial-gradient(circle at 90% 15%, rgba(217,154,62,0.07), transparent 45%),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:56px 24px 100px;}
+
+  /* Header */
+  header.hero{margin-bottom:56px;}
+  .eyebrow{
+    font-family:var(--sans); text-transform:uppercase; letter-spacing:.12em;
+    font-size:12px; color:var(--indigo-deep); font-weight:600; margin-bottom:14px;
+  }
+  h1{
+    font-family:var(--serif); font-weight:400; font-size:clamp(32px,5vw,46px);
+    line-height:1.1; margin:0 0 18px; color:var(--ink);
+  }
+  .hero p{color:var(--ink-soft); font-size:16px; max-width:58ch; margin:0 0 10px;}
+  .compass-mark{
+    width:46px; height:46px; border-radius:50%;
+    border:1.5px solid var(--indigo); position:relative; margin-bottom:22px;
+  }
+  .compass-mark::before, .compass-mark::after{
+    content:''; position:absolute; background:var(--indigo);
+  }
+  .compass-mark::before{ width:1px; height:14px; top:2px; left:50%; transform:translateX(-50%);}
+  .compass-mark::after{ width:1px; height:14px; bottom:2px; left:50%; transform:translateX(-50%); background:var(--amber);}
+
+  /* Progress */
+  .progress-rail{
+    position:sticky; top:0; z-index:20; background:var(--bg);
+    padding:14px 0 10px; margin-bottom:8px;
+  }
+  .progress-track{height:3px; background:var(--line); border-radius:3px; overflow:hidden;}
+  .progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--amber),var(--indigo)); transition:width .3s ease;}
+  .progress-label{font-size:12px; color:var(--ink-soft); margin-top:6px; letter-spacing:.03em;}
+
+  /* Category sections */
+  .category{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:32px clamp(20px,4vw,36px); margin-bottom:24px;
+  }
+  .cat-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px;}
+  .cat-num{font-family:var(--serif); font-size:14px; color:var(--amber); font-style:italic;}
+  .cat-title{font-family:var(--serif); font-size:24px; margin:0; color:var(--ink);}
+  .cat-sub{color:var(--ink-soft); font-size:14px; margin:0 0 26px;}
+
+  .question{margin-bottom:30px;}
+  .question:last-child{margin-bottom:0;}
+  .q-num{
+    display:block; font-size:11.5px; font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--amber); margin-bottom:6px;
+  }
+  .q-text{font-size:15.5px; margin-bottom:14px; color:var(--ink); font-weight:500;}
+  .scale{display:flex; gap:8px; align-items:center;}
+  .scale-labels{display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-soft); margin-top:8px;}
+  .pill-group{display:flex; gap:8px; flex:1;}
+  .pill{
+    flex:1; text-align:center; padding:11px 4px; border-radius:9px;
+    border:1px solid var(--line); background:#fbfaff; cursor:pointer;
+    font-size:14px; font-weight:600; color:var(--ink-soft);
+    transition: all .15s ease; user-select:none;
+  }
+  .pill:hover{border-color:var(--indigo); color:var(--indigo-deep);}
+  .pill.selected{
+    background:var(--indigo); border-color:var(--indigo); color:#fff;
+    box-shadow:0 3px 10px rgba(74,79,214,.28);
+  }
+  .question.missing{ animation: flash 1.4s ease; }
+  .question.missing .pill{ border-color:#c94b4b; }
+  @keyframes flash{
+    0%{ background:rgba(201,75,75,0.08); }
+    100%{ background:transparent; }
+  }
+
+  /* Submit */
+  .submit-row{text-align:center; margin:40px 0 60px;}
+  .btn{
+    font-family:var(--sans); font-weight:600; font-size:15px; letter-spacing:.01em;
+    padding:15px 34px; border-radius:30px; border:none; cursor:pointer;
+    background:var(--indigo); color:#fff; transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 6px 18px rgba(74,79,214,.28);
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 9px 22px rgba(74,79,214,.36);}
+  .btn:disabled{background:#c9c8dd; box-shadow:none; cursor:not-allowed; transform:none;}
+  .btn.ghost{
+    background:transparent; color:var(--indigo-deep); border:1.5px solid var(--indigo);
+    box-shadow:none;
+  }
+  .hint{font-size:13px; color:var(--ink-soft); margin-top:12px;}
+
+  /* Results */
+  #results{display:none;}
+  .results-intro{margin-bottom:32px;}
+  .results-intro h2{font-family:var(--serif); font-size:30px; font-weight:400; margin:0 0 10px;}
+  .overall-band{
+    display:inline-block; padding:6px 16px; border-radius:20px; font-size:13px;
+    font-weight:700; letter-spacing:.02em; margin-top:6px;
+  }
+  .band-placer{background:var(--amber-soft); color:#8a5a12;}
+  .band-equilibrio{background:var(--lavender); color:var(--indigo-deep);}
+  .band-felicidad{background:#dff0e4; color:#1f6b3c;}
+
+  .result-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px clamp(18px,4vw,32px); margin-bottom:20px;
+    display:grid; grid-template-columns:150px 1fr; gap:24px; align-items:center;
+  }
+  @media(max-width:560px){ .result-card{grid-template-columns:1fr; text-align:center;} }
+  .gauge-label{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+  .result-title{font-family:var(--serif); font-size:20px; margin:0 0 6px;}
+  .result-score{font-size:13px; font-weight:700; color:var(--indigo-deep); margin-bottom:8px;}
+  .result-text{font-size:14px; color:var(--ink-soft); margin:0;}
+
+  .reco-block{
+    background:linear-gradient(155deg, var(--lavender), #fff);
+    border:1px solid var(--line); border-radius:var(--radius);
+    padding:30px clamp(20px,4vw,36px); margin-top:8px;
+  }
+  .reco-block h3{font-family:var(--serif); font-size:22px; font-weight:400; margin:0 0 18px;}
+  .reco-item{display:flex; gap:14px; margin-bottom:16px;}
+  .reco-item:last-child{margin-bottom:0;}
+  .reco-dot{
+    flex:none; width:8px; height:8px; border-radius:50%; background:var(--indigo);
+    margin-top:7px;
+  }
+  .reco-item h4{margin:0 0 3px; font-size:14.5px; font-weight:700; color:var(--ink);}
+  .reco-item p{margin:0; font-size:14px; color:var(--ink-soft);}
+  .reco-group{margin-bottom:26px;}
+  .reco-group:last-child{margin-bottom:0;}
+  .reco-group-title{
+    font-size:12px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
+    color:var(--indigo-deep); margin:0 0 12px;
+  }
+
+  .compare-section{margin-top:36px;}
+  .compare-section h3{font-family:var(--serif); font-size:22px; font-weight:400; margin:0 0 6px;}
+  .compare-section .compare-note{font-size:13.5px; color:var(--ink-soft); margin:0 0 18px;}
+  .compare-table-wrap{
+    overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--paper);
+  }
+  table.compare-table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:520px;}
+  table.compare-table th, table.compare-table td{
+    text-align:left; padding:12px 16px; border-bottom:1px solid var(--line);
+  }
+  table.compare-table th{
+    background:var(--lavender); color:var(--indigo-deep); font-weight:700;
+    font-size:12.5px; text-transform:uppercase; letter-spacing:.03em;
+  }
+  table.compare-table th:first-child, table.compare-table td:first-child{
+    color:var(--ink); font-weight:600; width:26%;
+  }
+  table.compare-table td:nth-child(2){color:#8a5a12;}
+  table.compare-table td:nth-child(3){color:#1f6b3c;}
+  table.compare-table tr:last-child td{border-bottom:none;}
+
+  .copy-row{text-align:center; margin-top:36px;}
+  #copyBtn{min-width:220px;}
+
+  footer{text-align:center; color:var(--ink-soft); font-size:12.5px; margin-top:60px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="compass-mark" aria-hidden="true"></div>
+    <div class="eyebrow">Autodiagnóstico personal</div>
+    <h1>Placer inmediato<br>vs. felicidad</h1>
+    <p>Dieciocho preguntas divididas en tres categorías: tus motivos, tus acciones y cómo te sientes después. No hay respuestas correctas — solo un mapa honesto de hacia dónde se inclina tu semana típica.</p>
+    <p>Responde con lo que efectivamente haces, no con lo que te gustaría hacer.</p>
+  </header>
+
+  <div class="progress-rail">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 de 18 respondidas</div>
+  </div>
+
+  <form id="diagForm">
+
+    <section class="category" data-cat="0">
+      <div class="cat-head"><span class="cat-num">I</span><h2 class="cat-title">Orientaciones y motivos</h2></div>
+      <p class="cat-sub">El «¿por qué?» detrás de tus acciones.</p>
+
+      <div class="question" data-q="0">
+        <span class="q-num">Pregunta 1 de 6</span>
+        <p class="q-text">¿Tus metas se dirigen más a sentirte bien ahora mismo, o a convertirte en alguien mejor con el tiempo?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Sentirme bien ahora</span><span>Ser mejor con el tiempo</span></div>
+      </div>
+
+      <div class="question" data-q="1">
+        <span class="q-num">Pregunta 2 de 6</span>
+        <p class="q-text">Frente a un objetivo que vale la pena, ¿sueles tomar el camino fácil o inviertes esfuerzo aunque incomode?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Camino fácil</span><span>Invierto esfuerzo</span></div>
+      </div>
+
+      <div class="question" data-q="2">
+        <span class="q-num">Pregunta 3 de 6</span>
+        <p class="q-text">¿Tus decisiones importantes se guían más por bienes externos (dinero, estatus, imagen) o por lo que consideras auténtico para ti?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Bienes externos</span><span>Autenticidad</span></div>
+      </div>
+
+      <div class="question" data-q="3">
+        <span class="q-num">Pregunta 4 de 6</span>
+        <p class="q-text">Cuando compras algo o buscas una experiencia nueva, ¿lo haces sobre todo para llenar un vacío del momento, o porque aporta a un proyecto de vida más amplio?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Llenar el momento</span><span>Aporta a mi proyecto de vida</span></div>
+      </div>
+
+      <div class="question" data-q="4">
+        <span class="q-num">Pregunta 5 de 6</span>
+        <p class="q-text">Frente a una molestia o incomodidad cotidiana, ¿tu primer impulso es aliviarla de inmediato, o preguntarte qué te está pasando?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Aliviarla de inmediato</span><span>Preguntarme qué pide</span></div>
+      </div>
+
+      <div class="question" data-q="5">
+        <span class="q-num">Pregunta 6 de 6</span>
+        <p class="q-text">¿Buscas reconocimiento y aprobación de otros como motor principal, o actúas de la misma forma aunque nadie lo note?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Busco reconocimiento</span><span>Actúo aunque nadie lo note</span></div>
+      </div>
+    </section>
+
+    <section class="category" data-cat="1">
+      <div class="cat-head"><span class="cat-num">II</span><h2 class="cat-title">Comportamientos y acciones</h2></div>
+      <p class="cat-sub">El «¿qué?» haces con tu tiempo.</p>
+
+      <div class="question" data-q="6">
+        <span class="q-num">Pregunta 1 de 6</span>
+        <p class="q-text">¿Tus actividades suelen ser para tu beneficio individual, o incluyen servicio y conexión con otros?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Beneficio individual</span><span>Servicio y conexión</span></div>
+      </div>
+
+      <div class="question" data-q="7">
+        <span class="q-num">Pregunta 2 de 6</span>
+        <p class="q-text">¿Con qué frecuencia te involucras tan a fondo en algo que pierdes la noción del tiempo (estado de flow)?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Casi nunca</span><span>Con frecuencia</span></div>
+      </div>
+
+      <div class="question" data-q="8">
+        <span class="q-num">Pregunta 3 de 6</span>
+        <p class="q-text">Cuando una tarea se pone difícil pero tiene significado, ¿tiendes a abandonarla o a persistir?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Abandono</span><span>Persisto</span></div>
+      </div>
+
+      <div class="question" data-q="9">
+        <span class="q-num">Pregunta 4 de 6</span>
+        <p class="q-text">¿Con qué frecuencia dedicas tiempo a un acto concreto de ayuda que nadie te pidió?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Casi nunca</span><span>Con frecuencia</span></div>
+      </div>
+
+      <div class="question" data-q="10">
+        <span class="q-num">Pregunta 5 de 6</span>
+        <p class="q-text">Tus pasatiempos, ¿son principalmente de consumo pasivo (ver, comprar, hacer scroll) o requieren desarrollar una habilidad?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Consumo pasivo</span><span>Desarrollo de habilidad</span></div>
+      </div>
+
+      <div class="question" data-q="11">
+        <span class="q-num">Pregunta 6 de 6</span>
+        <p class="q-text">Cuando tienes tiempo libre disponible, ¿lo usas más para descansar o entretenerte, o para cultivar una relación, proyecto o aprendizaje?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Descansar/entretenerme</span><span>Cultivar algo</span></div>
+      </div>
+    </section>
+
+    <section class="category" data-cat="2">
+      <div class="cat-head"><span class="cat-num">III</span><h2 class="cat-title">Experiencias y resultados</h2></div>
+      <p class="cat-sub">El «¿cómo?» te sientes después.</p>
+
+      <div class="question" data-q="12">
+        <span class="q-num">Pregunta 1 de 6</span>
+        <p class="q-text">Piensa en la última vez que te diste un gusto placentero (una compra, un maratón de series, salir a comer algo rico). Al terminar, ¿te quedaste con ganas de repetirlo pronto, o con una sensación de «esto ya fue suficiente»?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Ganas de repetirlo pronto</span><span>Fue suficiente</span></div>
+      </div>
+
+      <div class="question" data-q="13">
+        <span class="q-num">Pregunta 2 de 6</span>
+        <p class="q-text">Tu bienestar de una semana típica, ¿se parece más a ráfagas momentáneas de alegría o a un estado estable y duradero?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Ráfagas momentáneas</span><span>Estable y duradero</span></div>
+      </div>
+
+      <div class="question" data-q="14">
+        <span class="q-num">Pregunta 3 de 6</span>
+        <p class="q-text">¿Sientes tu bienestar principalmente en el cuerpo (sensación física), o como un propósito que le da dirección a tu vida?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Sensación física</span><span>Propósito y dirección</span></div>
+      </div>
+
+      <div class="question" data-q="15">
+        <span class="q-num">Pregunta 4 de 6</span>
+        <p class="q-text">Al mirar tu semana en retrospectiva, ¿sientes que pasó sin dejar huella, o que construyó algo que permanece?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Sin dejar huella</span><span>Construyó algo</span></div>
+      </div>
+
+      <div class="question" data-q="16">
+        <span class="q-num">Pregunta 5 de 6</span>
+        <p class="q-text">¿Tu estado de ánimo depende fuertemente de que se repitan ciertos estímulos (compras, redes, entretenimiento)?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Depende mucho de ellos</span><span>Estable sin ellos</span></div>
+      </div>
+
+      <div class="question" data-q="17">
+        <span class="q-num">Pregunta 6 de 6</span>
+        <p class="q-text">Ante una pérdida de comodidad o estatus (trabajo, dinero, reconocimiento), ¿sientes que tu sentido de valor personal se derrumbaría, o seguiría en gran parte intacto?</p>
+        <div class="scale"><div class="pill-group">
+          <div class="pill" data-val="1">1</div><div class="pill" data-val="2">2</div><div class="pill" data-val="3">3</div><div class="pill" data-val="4">4</div><div class="pill" data-val="5">5</div>
+        </div></div>
+        <div class="scale-labels"><span>Se derrumbaría</span><span>Seguiría intacto</span></div>
+      </div>
+    </section>
+
+    <div class="submit-row">
+      <button type="submit" class="btn" id="submitBtn">Ver mi diagnóstico</button>
+      <p class="hint" id="submitHint">Responde las 18 preguntas para continuar.</p>
+    </div>
+  </form>
+
+  <section id="results">
+    <div class="results-intro">
+      <h2>Tu diagnóstico</h2>
+      <p style="color:var(--ink-soft); margin:0;">Puntaje general: hacia dónde se inclina tu semana típica.</p>
+      <div class="overall-band" id="overallBand"></div>
+    </div>
+
+    <div id="cardsWrap"></div>
+
+    <div class="reco-block">
+      <h3>Ejemplos concretos para avanzar hacia la felicidad</h3>
+      <div id="recoWrap"></div>
+    </div>
+
+    <div class="compare-section">
+      <h3>Placer vs. felicidad, de un vistazo</h3>
+      <p class="compare-note">Guarda esta tabla como referencia — te ayuda a reconocer, en el momento, hacia cuál de las dos te está empujando una decisión.</p>
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr><th>Característica</th><th>Placer</th><th>Felicidad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Neurotransmisor</td><td>Dopamina</td><td>Serotonina</td></tr>
+            <tr><td>Duración</td><td>Corto plazo, efímero</td><td>Largo plazo, estable</td></tr>
+            <tr><td>Naturaleza</td><td>Visceral, física</td><td>Etérea, psicológica</td></tr>
+            <tr><td>¿Genera dependencia?</td><td>Sí — "nunca es suficiente"</td><td>No — sensación de "esto es suficiente"</td></tr>
+            <tr><td>Dirección</td><td>Empuja a recibir</td><td>Incita a dar</td></tr>
+            <tr><td>Objetivo central</td><td>Satisfacción inmediata de deseos</td><td>Crecimiento y propósito</td></tr>
+            <tr><td>Impacto biológico</td><td>Pro-inflamatorio</td><td>Efecto protector</td></tr>
+            <tr><td>Relación con el esfuerzo</td><td>Busca ausencia de tensión</td><td>Requiere esfuerzo y compromiso</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="copy-row">
+      <button class="btn ghost" id="copyBtn">Copiar resultados</button>
+    </div>
+  </section>
+
+  <footer>Diagnóstico personal — placer (hedonía) vs. felicidad (eudaimonía). No sustituye orientación profesional.</footer>
+</div>
+
+<script>
+(function(){
+  const totalQ = 18;
+  const answers = {};
+
+  const categories = [
+    { title: "Orientaciones y motivos", questions: [0,1,2,3,4,5] },
+    { title: "Comportamientos y acciones", questions: [6,7,8,9,10,11] },
+    { title: "Experiencias y resultados", questions: [12,13,14,15,16,17] }
+  ];
+
+  const recoPool = {
+    0: [
+      { h:"Nombra tu 'para qué'", p:"Antes de una decisión importante (trabajo, tiempo, dinero), escribe en una frase qué te acerca esa opción a algo que valoras, no solo a lo que obtienes a cambio." },
+      { h:"Invierte en una habilidad exigente", p:"Elige una actividad que te rete de verdad — un idioma, un instrumento, un oficio — y dedícale tiempo aunque no dé resultados inmediatos." },
+      { h:"Practica una decisión auténtica", p:"Esta semana, toma al menos una decisión guiada por lo que consideras correcto para ti, no por cómo se vería desde afuera." }
+    ],
+    1: [
+      { h:"Suma un acto de servicio", p:"Busca una forma concreta de ayudar a alguien esta semana — mentoría, voluntariado, o simplemente tiempo dedicado a otra persona sin nada a cambio." },
+      { h:"Diseña un bloque de flow", p:"Aparta un tramo de tiempo sin interrupciones para una tarea que use tus mejores habilidades y te exija concentración total." },
+      { h:"Elige persistir una vez más", p:"La próxima vez que una tarea con significado se ponga difícil, date un plazo corto antes de decidir si la abandonas." }
+    ],
+    2: [
+      { h:"Cierra el día con gratitud", p:"Antes de dormir, anota tres cosas por las que sientes gratitud genuina. Es una práctica breve con efecto medible en el bienestar sostenido." },
+      { h:"Introduce una pausa de atención plena", p:"Prueba 5-10 minutos diarios de silencio o respiración consciente para notar la diferencia entre sensación física y sentido de propósito." },
+      { h:"Revisa tu 'columna de sentido'", p:"Al final de la semana, pregúntate qué hiciste que, repetido durante diez años, construiría algo. Ajusta la semana siguiente en esa dirección." }
+    ]
+  };
+
+  const reinforcePool = {
+    0: { h:"Tus motivos ya apuntan al crecimiento", p:"Mantén el hábito de elegir con esfuerzo y autenticidad — es la base de una vida con dirección." },
+    1: { h:"Tus acciones ya incluyen servicio y flow", p:"Sigue protegiendo esos espacios de conexión y concentración profunda; son poco comunes y valiosos." },
+    2: { h:"Tu bienestar ya es estable y duradero", p:"Sigue cultivando las prácticas reflexivas que sostienen esa estabilidad, especialmente en semanas difíciles." }
+  };
+
+  // Build pill interactions
+  document.querySelectorAll('.question').forEach(q => {
+    const idx = parseInt(q.dataset.q, 10);
+    q.querySelectorAll('.pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        q.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+        pill.classList.add('selected');
+        answers[idx] = parseInt(pill.dataset.val, 10);
+        updateProgress();
+      });
+    });
+  });
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const submitBtn = document.getElementById('submitBtn');
+  const submitHint = document.getElementById('submitHint');
+
+  function updateProgress(){
+    const answered = Object.keys(answers).length;
+    progressFill.style.width = (answered/totalQ*100) + '%';
+    progressLabel.textContent = answered + ' de ' + totalQ + ' respondidas';
+    submitHint.textContent = answered < totalQ
+      ? 'Responde las 9 preguntas para continuar.'
+      : 'Listo. Puedes ver tu diagnóstico.';
+  }
+
+  function bandFor(score){
+    if (score < 40) return { key:'placer', label:'Inclinación al placer', cls:'band-placer' };
+    if (score <= 65) return { key:'equilibrio', label:'Equilibrio', cls:'band-equilibrio' };
+    return { key:'felicidad', label:'Inclinación a la felicidad', cls:'band-felicidad' };
+  }
+
+  function gaugeSVG(pct){
+    // semicircle gauge, 0% = far left (amber/placer), 100% = far right (indigo/felicidad)
+    const angle = -90 + (pct/100)*180; // degrees, -90 left to +90 right
+    const rad = angle * Math.PI/180;
+    const cx=75, cy=75, r=58;
+    const nx = cx + r*Math.sin(rad);
+    const ny = cy - r*Math.cos(rad);
+    return `
+    <svg width="150" height="92" viewBox="0 0 150 92" style="display:block;margin:0 auto;">
+      <path d="M 17 75 A 58 58 0 0 1 133 75" fill="none" stroke="#e3e1f0" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 17 75 A 58 58 0 0 1 133 75" fill="none" stroke="url(#grad)" stroke-width="10" stroke-linecap="round"
+        stroke-dasharray="${(pct/100)*182} 182"/>
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#d99a3e"/>
+          <stop offset="100%" stop-color="#4a4fd6"/>
+        </linearGradient>
+      </defs>
+      <circle cx="${cx}" cy="${cy}" r="4" fill="#2a2836"/>
+      <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#2a2836" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  let lastResultsText = '';
+
+  document.getElementById('diagForm').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    document.querySelectorAll('.question').forEach(q => q.classList.remove('missing'));
+
+    if (Object.keys(answers).length < totalQ) {
+      const firstMissing = document.querySelector('.question:not(.missing)');
+      const missingQuestions = [];
+      document.querySelectorAll('.question').forEach(q => {
+        const idx = parseInt(q.dataset.q, 10);
+        if (answers[idx] === undefined) missingQuestions.push(q);
+      });
+      missingQuestions.forEach(q => q.classList.add('missing'));
+      if (missingQuestions.length) {
+        missingQuestions[0].scrollIntoView({behavior:'smooth', block:'center'});
+      }
+      submitHint.textContent = 'Te falta responder ' + missingQuestions.length + ' pregunta(s) — resaltada(s) en rojo arriba.';
+      submitHint.style.color = '#c94b4b';
+      return;
+    }
+    submitHint.style.color = '';
+
+    const catScores = [];
+    categories.forEach(cat => {
+      const vals = cat.questions.map(i => answers[i]);
+      const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+      const pct = ((avg-1)/4)*100;
+      catScores.push(Math.round(pct));
+    });
+    const overallPct = Math.round(catScores.reduce((a,b)=>a+b,0)/catScores.length);
+    const overallBand = bandFor(overallPct);
+
+    const bandEl = document.getElementById('overallBand');
+    bandEl.textContent = overallBand.label + ' — ' + overallPct + '%';
+    bandEl.className = 'overall-band ' + overallBand.cls;
+
+    const cardsWrap = document.getElementById('cardsWrap');
+    cardsWrap.innerHTML = '';
+    let textLines = [];
+    textLines.push('DIAGNÓSTICO: PLACER VS. FELICIDAD');
+    textLines.push('Resultado general: ' + overallBand.label + ' (' + overallPct + '%)');
+    textLines.push('');
+
+    categories.forEach((cat, i) => {
+      const pct = catScores[i];
+      const band = bandFor(pct);
+      const desc = {
+        placer: 'Esta área se inclina hoy hacia la gratificación inmediata.',
+        equilibrio: 'Esta área muestra un balance entre placer y sentido.',
+        felicidad: 'Esta área ya está anclada en sentido y crecimiento.'
+      }[band.key];
+
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.innerHTML = `
+        <div>
+          ${gaugeSVG(pct)}
+          <div class="gauge-label" style="text-align:center;">Placer ⟵ ⟶ Felicidad</div>
+        </div>
+        <div>
+          <p class="result-title">${cat.title}</p>
+          <p class="result-score">${pct}% orientado a la felicidad · ${band.label}</p>
+          <p class="result-text">${desc}</p>
+        </div>`;
+      cardsWrap.appendChild(card);
+
+      textLines.push(cat.title + ': ' + pct + '% — ' + band.label);
+    });
+
+    // Recommendations: lowest-scoring categories get concrete growth examples, others get reinforcement
+    const recoWrap = document.getElementById('recoWrap');
+    recoWrap.innerHTML = '';
+    textLines.push('');
+    textLines.push('EJEMPLOS CONCRETOS PARA AVANZAR HACIA LA FELICIDAD');
+
+    catScores.forEach((pct, i) => {
+      const group = document.createElement('div');
+      group.className = 'reco-group';
+      const groupTitle = document.createElement('p');
+      groupTitle.className = 'reco-group-title';
+
+      if (pct < 65) {
+        groupTitle.textContent = categories[i].title + ' — inclinado al placer';
+        group.appendChild(groupTitle);
+        textLines.push('[' + categories[i].title + ' — inclinado al placer]');
+        recoPool[i].forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'reco-item';
+          div.innerHTML = `<div class="reco-dot"></div><div><h4>${item.h}</h4><p>${item.p}</p></div>`;
+          group.appendChild(div);
+          textLines.push('- ' + item.h + ': ' + item.p);
+        });
+      } else {
+        groupTitle.textContent = categories[i].title + ' — ya inclinado a la felicidad';
+        group.appendChild(groupTitle);
+        textLines.push('[' + categories[i].title + ' — ya inclinado a la felicidad]');
+        const item = reinforcePool[i];
+        const div = document.createElement('div');
+        div.className = 'reco-item';
+        div.innerHTML = `<div class="reco-dot"></div><div><h4>${item.h}</h4><p>${item.p}</p></div>`;
+        group.appendChild(div);
+        textLines.push('- ' + item.h + ': ' + item.p);
+      }
+      recoWrap.appendChild(group);
+      textLines.push('');
+    });
+
+    textLines.push('PLACER VS. FELICIDAD, DE UN VISTAZO');
+    textLines.push('Neurotransmisor — Placer: Dopamina | Felicidad: Serotonina');
+    textLines.push('Duración — Placer: Corto plazo, efímero | Felicidad: Largo plazo, estable');
+    textLines.push('Naturaleza — Placer: Visceral, física | Felicidad: Etérea, psicológica');
+    textLines.push('¿Genera dependencia? — Placer: Sí | Felicidad: No, "esto es suficiente"');
+    textLines.push('Dirección — Placer: Empuja a recibir | Felicidad: Incita a dar');
+    textLines.push('Objetivo central — Placer: Satisfacción inmediata | Felicidad: Crecimiento y propósito');
+    textLines.push('Impacto biológico — Placer: Pro-inflamatorio | Felicidad: Efecto protector');
+    textLines.push('Relación con el esfuerzo — Placer: Ausencia de tensión | Felicidad: Esfuerzo y compromiso');
+
+    lastResultsText = textLines.join('\n');
+
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function(){
+    const btn = this;
+    navigator.clipboard.writeText(lastResultsText).then(() => {
+      const original = btn.textContent;
+      btn.textContent = '¡Copiado!';
+      setTimeout(() => { btn.textContent = original; }, 2000);
+    }).catch(() => {
+      const original = btn.textContent;
+      btn.textContent = 'No se pudo copiar';
+      setTimeout(() => { btn.textContent = original; }, 2000);
+    });
+  });
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>
