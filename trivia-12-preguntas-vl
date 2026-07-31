@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Una Vida Lograda — Trivia</title>
+<style>
+  :root{
+    --bg-deep:#122016;
+    --bg-panel:#1b3122;
+    --bg-panel-2:#20392a;
+    --gold:#c9a24b;
+    --gold-bright:#e3c374;
+    --cream:#f2ede1;
+    --cream-dim:#cfc9ba;
+    --sage:#7fa87a;
+    --clay:#a85c48;
+    --hairline:rgba(242,237,225,0.14);
+    --font-display: 'Iowan Old Style','Palatino Linotype',Georgia,'Times New Roman',serif;
+    --font-body: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --radius: 18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at top, rgba(201,162,75,0.10), transparent 60%),
+      var(--bg-deep);
+    color:var(--cream);
+    font-family:var(--font-body);
+    display:flex;
+    justify-content:center;
+    padding:24px 16px 40px;
+  }
+  #app{ width:100%; max-width:440px; }
+  .frame{
+    background:var(--bg-panel);
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    padding:28px 22px 26px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+    position:relative;
+    overflow:hidden;
+  }
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px solid rgba(201,162,75,0.28);
+    border-radius:calc(var(--radius) - 6px);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--gold); text-align:center; margin-bottom:4px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:600; font-size:26px;
+    text-align:center; margin:6px 0 2px; color:var(--cream);
+  }
+  .subtitle{ text-align:center; font-size:13px; color:var(--cream-dim); margin:0 0 22px; line-height:1.5; }
+  .compass{ display:block; margin:2px auto 10px; width:54px; height:54px; }
+  label{ display:block; font-size:12px; letter-spacing:0.04em; color:var(--cream-dim); margin:14px 0 6px; }
+  input[type="text"]{
+    width:100%; background:var(--bg-panel-2); border:1px solid var(--hairline);
+    border-radius:10px; padding:12px 13px; color:var(--cream); font-size:15px; font-family:var(--font-body);
+  }
+  input[type="text"]:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .hint{ font-size:11.5px; color:var(--cream-dim); opacity:0.75; margin-top:6px; line-height:1.4; }
+  button{ font-family:var(--font-body); cursor:pointer; }
+  .btn-primary{
+    width:100%; margin-top:22px;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    color:#1b2416; border:none; border-radius:10px; padding:13px 16px; font-size:15px; font-weight:600;
+  }
+  .btn-primary:disabled{ opacity:0.45; cursor:not-allowed; }
+  .btn-primary:focus-visible{ outline:3px solid var(--cream); outline-offset:2px; }
+  .btn-ghost{
+    width:100%; margin-top:10px; background:transparent; color:var(--cream-dim);
+    border:1px solid var(--hairline); border-radius:10px; padding:11px 16px; font-size:13.5px;
+  }
+  .btn-ghost:focus-visible{ outline:2px solid var(--gold); }
+  .error-text{ color:var(--clay); font-size:12.5px; margin-top:8px; min-height:14px; }
+  .progress-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .progress-label{ font-size:11.5px; color:var(--cream-dim); letter-spacing:0.04em; }
+  .progress-track{ height:5px; width:100%; background:var(--bg-panel-2); border-radius:4px; overflow:hidden; margin-bottom:20px; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-bright)); transition:width 0.35s ease; }
+  .question-text{ font-family:var(--font-display); font-size:19px; line-height:1.4; margin:0 0 18px; color:var(--cream); }
+  .option{
+    display:block; width:100%; text-align:left; background:var(--bg-panel-2);
+    border:1px solid var(--hairline); border-radius:12px; padding:13px 14px; color:var(--cream);
+    font-size:14.5px; line-height:1.4; margin-bottom:10px; transition:transform 0.12s ease, border-color 0.12s ease;
+  }
+  .option:hover:not(:disabled){ border-color:var(--gold); }
+  .option:focus-visible{ outline:2px solid var(--gold); }
+  .option.correct{ border-color:var(--sage); background:rgba(127,168,122,0.18); }
+  .option.incorrect{ border-color:var(--clay); background:rgba(168,92,72,0.18); }
+  .option:disabled{ cursor:default; }
+  .feedback-box{
+    font-size:13px; line-height:1.5; color:var(--cream-dim); background:var(--bg-panel-2);
+    border-left:2px solid var(--gold); border-radius:8px; padding:12px 13px; margin:14px 0 4px;
+  }
+  .gauge-wrap{ display:flex; justify-content:center; margin:6px 0 6px; }
+  .score-line{ text-align:center; font-family:var(--font-display); font-size:34px; margin:2px 0 0; }
+  .score-sub{ text-align:center; font-size:12px; color:var(--cream-dim); margin-bottom:6px; }
+  .tier-name{ text-align:center; font-family:var(--font-display); font-size:20px; color:var(--gold-bright); margin:14px 0 4px; }
+  .tier-desc{ text-align:center; font-size:13px; color:var(--cream-dim); line-height:1.5; padding:0 6px; }
+  .lb-row{ display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px solid var(--hairline); }
+  .lb-row:last-child{ border-bottom:none; }
+  .lb-rank{ width:26px; text-align:center; font-family:var(--font-display); font-size:15px; color:var(--gold); }
+  .lb-alias{ flex:1; font-size:14px; }
+  .lb-alias.me{ color:var(--gold-bright); font-weight:600; }
+  .lb-score{ font-size:14px; color:var(--cream-dim); }
+  .lb-empty{ text-align:center; color:var(--cream-dim); font-size:13px; padding:20px 0; }
+  .lb-live{ text-align:center; font-size:10.5px; color:var(--sage); opacity:0.85; margin-top:10px; }
+  .setup-box{
+    background:var(--bg-panel-2); border:1px dashed var(--clay); border-radius:10px;
+    padding:14px; font-size:12.5px; line-height:1.6; color:var(--cream-dim); margin-top:16px;
+  }
+  .setup-box code{ color:var(--gold-bright); }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div id="app">Cargando…</div>
+
+<!-- Firebase (compat build — no bundler needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAtIIgTDlxJcs_d5Bj8UIlBVyNWJTbxDUk",
+  authDomain: "talleres-trivia.firebaseapp.com",
+  databaseURL: "https://talleres-trivia-default-rtdb.firebaseio.com",
+  projectId: "talleres-trivia",
+  storageBucket: "talleres-trivia.firebasestorage.app",
+  messagingSenderId: "206614585224",
+  appId: "1:206614585224:web:2bc84337ada41a5eef243d"
+};
+
+const COURSE = {
+  id: "una-vida-lograda",
+  title: "Una Vida Lograda",
+  subtitle: "Sesiones 1 y 2 · El espejo · Por qué sentirse bien no es lo mismo que vivir bien",
+  questions: [
+    { q: "Según Séneca, ¿cuál es el problema real detrás de una vida ocupada?",
+      options: [
+        "La inactividad.",
+        "La actividad sin autoría — estar ocupado sin estar realmente presente.",
+        "Tener demasiado tiempo libre.",
+        "No planificar el día con suficiente detalle."
+      ], correct: 1,
+      feedback: "Séneca llamó a esto 'ocupada desidia': una vida puede estar llena de actividad y, al mismo tiempo, vacía de dirección." },
+    { q: "¿Cuáles son las tres formas en que, según Séneca, se pierde el tiempo?",
+      options: [
+        "Dormir, comer y descansar.",
+        "Tareas superfluas, ambiciones ajenas, y hábitos o vicios que nunca se cuestionan.",
+        "Trabajar, estudiar y socializar.",
+        "Viajar, ahorrar y planear."
+      ], correct: 1,
+      feedback: "Perseguir lo que otros esperan de nosotros es tan costoso como perder el tiempo en tareas que no importan." },
+    { q: "¿Cuál es la diferencia entre 'producción' y 'operación'?",
+      options: [
+        "La producción son actividades hacia un resultado externo que otro podría hacer por ti; la operación son acciones cuyo fin permanece en ti y te configuran como persona.",
+        "Son exactamente lo mismo, solo cambia el nombre.",
+        "La operación es siempre más rápida que la producción.",
+        "La producción configura quién eres; la operación no deja huella."
+      ], correct: 0,
+      feedback: "La pregunta clave: si pagaras a alguien más para hacer esta actividad por ti, ¿perderías solo el resultado, o algo esencial de ti mismo?" },
+    { q: "¿Qué es una 'codificación', según esta sesión?",
+      options: [
+        "Una fortaleza que se construye con años de práctica y disciplina.",
+        "Una capacidad natural con la que pareces haber nacido 'cableado' — te sale con una facilidad que a otros les cuesta replicar.",
+        "Un hábito que cualquiera puede aprender en pocas semanas.",
+        "Un tipo de meta profesional a largo plazo."
+      ], correct: 1,
+      feedback: "A diferencia de una fortaleza aprendida, la codificación ya estaba ahí, esperando ser descubierta por la experiencia." },
+    { q: "¿Cuál es la diferencia entre tu 'zona conocida' y tu 'marco', según esta sesión?",
+      options: [
+        "La zona conocida es lo cómodo y predecible; tu marco es el lugar donde tu codificación realmente se despliega y tiene efecto.",
+        "Son sinónimos — ambos términos describen exactamente lo mismo.",
+        "Tu marco es siempre menos productivo que tu zona conocida.",
+        "La zona conocida cambia constantemente; el marco es siempre el mismo lugar físico."
+      ], correct: 0,
+      feedback: "Confundirlas sostiene una vida cómoda pero desalineada: quedarte donde es fácil, no donde realmente operas como quien eres." },
+    { q: "El 'Erizo Personal' de Jim Collins es la intersección de tres elementos. ¿Cuáles son?",
+      options: [
+        "Lo que te apasiona, tu codificación, y la realidad económica que te sostiene haciéndolo.",
+        "El dinero, la fama y el reconocimiento social.",
+        "Tu educación formal, tu edad y tu experiencia laboral.",
+        "El tiempo libre, el descanso y el entretenimiento."
+      ], correct: 0,
+      feedback: "Cuando las tres coinciden, el dinero deja de ser el fin y se convierte en el combustible que permite seguir haciendo el trabajo que apasiona." },
+    { q: "¿Cuál es la diferencia clave entre la felicidad hedonista y el sentido eudaimónico?",
+      options: [
+        "La primera depende de lo que recibimos; la segunda, de lo que damos.",
+        "Ambas dependen exclusivamente de factores externos.",
+        "El sentido es inmediato; el placer se construye con el tiempo.",
+        "No existe ninguna diferencia real entre ambas."
+      ], correct: 0,
+      feedback: "El placer llega de fuera y en el instante; el sentido se construye dando algo de uno mismo." },
+    { q: "Según Viktor Frankl, ¿qué es la felicidad?",
+      options: [
+        "Un objetivo que debe perseguirse directamente.",
+        "Una consecuencia de haber encontrado un sentido.",
+        "Un estado permanente una vez alcanzado.",
+        "Lo mismo que el placer inmediato."
+      ], correct: 1,
+      feedback: "Cuanto más se persigue la felicidad de frente, más se aleja: aparece como efecto secundario del sentido." },
+    { q: "¿Qué distingue Alejandro Llano entre 'bienes externos' y 'riquezas internas'?",
+      options: [
+        "Los bienes externos se profundizan con el uso; las riquezas internas se agotan.",
+        "Los bienes externos (poder, fama, dinero) se consumen y dependen de factores externos; las riquezas internas (verdad, amor, belleza) se profundizan con el uso.",
+        "Ambos tipos dependen completamente de la suerte.",
+        "Las riquezas internas se pierden con un solo evento externo."
+      ], correct: 1,
+      feedback: "Los bienes externos suben y bajan con el mercado o la opinión ajena; las riquezas internas solo se pierden si se dejan de cultivar." },
+    { q: "En el estudio de 1978 con ganadores de lotería, ¿qué se descubrió meses después? (a esto se le llamó 'la cinta hedónica')",
+      options: [
+        "Eran mucho más felices que el grupo de control.",
+        "No eran significativamente más felices que las personas comunes — el subidón inicial se disolvió.",
+        "Se volvieron menos felices que antes de ganar.",
+        "El estudio no encontró ningún resultado claro."
+      ], correct: 1,
+      feedback: "Así como correr en una cinta no te lleva a ningún lado nuevo, perseguir estímulos placenteros más grandes no aumenta el bienestar de forma sostenida." },
+    { q: "¿Qué exige típicamente el 'sentido', a diferencia del 'placer'?",
+      options: [
+        "Nada — se recibe pasivamente igual que el placer.",
+        "Esfuerzo, incomodidad o entrega.",
+        "Solo dinero.",
+        "Aislamiento social."
+      ], correct: 1,
+      feedback: "El placer es rápido y casi no pide nada; el sentido casi siempre pide algo a cambio." },
+    { q: "Para Alejandro Llano, ¿cuál es la 'clave última de la vida lograda'?",
+      options: [
+        "El estatus profesional.",
+        "El amor — la capacidad de querer, no lo que se acumula.",
+        "La acumulación de bienes materiales.",
+        "El reconocimiento social."
+      ], correct: 1,
+      feedback: "Lo que realmente sostiene a una persona es su capacidad de querer, no lo que posee." }
+  ],
+  tiers: [
+    { min: 0, max: 3, name: "Explorador Novato", desc: "Apenas empiezas a distinguir la autoría del piloto automático, y el placer del sentido — vuelve a repasar las sesiones y estas preguntas te resultarán obvias la próxima vez." },
+    { min: 4, max: 6, name: "Buscador de Sentido", desc: "Ya notas la diferencia entre operar y producir, entre lo que se siente bien y lo que realmente importa. Sigue afinando la brújula." },
+    { min: 7, max: 9, name: "Guía Consciente", desc: "Tienes clara la distinción entre autoría y piloto automático, y entre placer y sentido — y podrías explicárselas a otros." },
+    { min: 10, max: 12, name: "Brújula Interior", desc: "Dominio completo de ambas sesiones: entiendes qué te configura como persona y por qué sentirse bien no es lo mismo que vivir bien." }
+  ]
+};
+
+const FIREBASE_READY = firebaseConfig.apiKey !== "TU_API_KEY_AQUI" && !firebaseConfig.databaseURL.includes("PON_AQUI");
+let db = null;
+if(FIREBASE_READY){
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+}
+
+let state = {
+  screen: "join",
+  sessionCode: defaultSessionCode(),
+  alias: "",
+  qIndex: 0,
+  correctCount: 0,
+  answered: false,
+  selected: null,
+  leaderboard: [],
+  lbListenerRef: null
+};
+
+function defaultSessionCode(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function slugify(str){
+  return String(str).trim().toLowerCase()
+    .replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"").slice(0,60) || "sesion";
+}
+function leaderboardPath(){
+  return `leaderboards/${COURSE.id}/${slugify(state.sessionCode)}`;
+}
+
+async function saveScore(alias, correctCount, total){
+  if(!db) return;
+  try{
+    const key = slugify(alias);
+    await db.ref(`${leaderboardPath()}/${key}`).set({
+      alias: alias.trim(), score: correctCount, total, ts: Date.now()
+    });
+  }catch(e){
+    console.error("No se pudo guardar el puntaje:", e);
+  }
+}
+
+function startLeaderboardListener(){
+  stopLeaderboardListener();
+  if(!db) return;
+  const ref = db.ref(leaderboardPath());
+  const handler = snapshot => {
+    const val = snapshot.val() || {};
+    state.leaderboard = Object.values(val).sort((a,b) => b.score - a.score || a.ts - b.ts);
+    if(state.screen === "leaderboard") render();
+  };
+  ref.on("value", handler);
+  state.lbListenerRef = { ref, handler };
+}
+function stopLeaderboardListener(){
+  if(state.lbListenerRef){
+    state.lbListenerRef.ref.off("value", state.lbListenerRef.handler);
+    state.lbListenerRef = null;
+  }
+}
+
+function render(){
+  const app = document.getElementById("app");
+  if(!FIREBASE_READY){ app.innerHTML = renderSetupNeeded(); return; }
+  if(state.screen === "join") app.innerHTML = renderJoin();
+  else if(state.screen === "question") app.innerHTML = renderQuestion();
+  else if(state.screen === "results") app.innerHTML = renderResults();
+  else if(state.screen === "leaderboard") app.innerHTML = renderLeaderboard();
+  attachHandlers();
+}
+
+function renderSetupNeeded(){
+  return `
+    <div class="frame">
+      <div class="eyebrow">Configuración pendiente</div>
+      <h1 style="font-size:20px;">Falta conectar Firebase</h1>
+      <div class="setup-box">
+        Reemplaza el bloque <code>firebaseConfig</code> al inicio del
+        archivo con la configuración real de tu proyecto de Firebase
+        (Configuración del proyecto → Tus apps → app web).
+      </div>
+    </div>
+  `;
+}
+
+function compassSvg(){
+  return `<svg class="compass" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="30" cy="30" r="27" stroke="#c9a24b" stroke-width="1.4"/>
+    <circle cx="30" cy="30" r="21" stroke="#c9a24b" stroke-width="0.7" opacity="0.6"/>
+    <path d="M30 8 L34 30 L30 52 L26 30 Z" fill="#c9a24b"/>
+    <path d="M8 30 L30 26 L52 30 L30 34 Z" fill="#c9a24b" opacity="0.55"/>
+    <circle cx="30" cy="30" r="2.6" fill="#f2ede1"/>
+  </svg>`;
+}
+
+function renderJoin(){
+  return `
+    <div class="frame">
+      <div class="eyebrow">Módulo · Una Vida Lograda</div>
+      ${compassSvg()}
+      <h1>${COURSE.title}</h1>
+      <p class="subtitle">${COURSE.subtitle}</p>
+      <label for="sessionCode">Código de sesión</label>
+      <input type="text" id="sessionCode" value="${escapeAttr(state.sessionCode)}" placeholder="ej. 2026-07-31" />
+      <p class="hint">Tu facilitador te dará el código, o usa la fecha de hoy para tu grupo.</p>
+      <label for="alias">Tu apodo</label>
+      <input type="text" id="alias" placeholder="ej. Viajero23" maxlength="24" />
+      <p class="error-text" id="joinError"></p>
+      <button class="btn-primary" id="startBtn">Comenzar</button>
+    </div>
+  `;
+}
+
+function renderQuestion(){
+  const idx = state.qIndex;
+  const item = COURSE.questions[idx];
+  const total = COURSE.questions.length;
+  const pct = Math.round((idx / total) * 100);
+  const optionsHtml = item.options.map((opt,i) => {
+    let cls = "option";
+    if(state.answered){
+      if(i === item.correct) cls += " correct";
+      else if(i === state.selected) cls += " incorrect";
+    }
+    return `<button class="${cls}" data-i="${i}" ${state.answered ? "disabled" : ""}>${opt}</button>`;
+  }).join("");
+  const feedbackHtml = state.answered
+    ? `<div class="feedback-box">${item.feedback}</div>
+       <button class="btn-primary" id="nextBtn">${idx === total-1 ? "Ver resultado" : "Siguiente pregunta"}</button>`
+    : "";
+  return `
+    <div class="frame">
+      <div class="progress-row">
+        <span class="progress-label">Pregunta ${idx+1} de ${total}</span>
+        <span class="progress-label">${state.correctCount} correctas</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <p class="question-text">${item.q}</p>
+      ${optionsHtml}
+      ${feedbackHtml}
+    </div>
+  `;
+}
+
+function getTier(score){
+  return COURSE.tiers.find(t => score >= t.min && score <= t.max) || COURSE.tiers[0];
+}
+function gaugeSvg(pct){
+  const angle = -90 + (pct/100)*180;
+  return `<svg width="180" height="106" viewBox="0 0 180 106" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 100 A80 80 0 0 1 170 100" fill="none" stroke="#20392a" stroke-width="14" stroke-linecap="round"/>
+    <path d="M10 100 A80 80 0 0 1 170 100" fill="none" stroke="url(#g1)" stroke-width="14" stroke-linecap="round"
+      stroke-dasharray="251.2" stroke-dashoffset="${251.2 - (pct/100)*251.2}"/>
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a85c48"/><stop offset="55%" stop-color="#c9a24b"/><stop offset="100%" stop-color="#7fa87a"/>
+    </linearGradient></defs>
+    <g transform="translate(90,100) rotate(${angle})"><path d="M0 0 L-3 6 L0 -66 L3 6 Z" fill="#f2ede1"/></g>
+    <circle cx="90" cy="100" r="6" fill="#f2ede1"/>
+  </svg>`;
+}
+function renderResults(){
+  const total = COURSE.questions.length;
+  const score = state.correctCount;
+  const pct = Math.round((score/total)*100);
+  const tier = getTier(score);
+  return `
+    <div class="frame">
+      <div class="eyebrow">Resultado</div>
+      <div class="gauge-wrap">${gaugeSvg(pct)}</div>
+      <p class="score-line">${score} / ${total}</p>
+      <p class="score-sub">respuestas correctas</p>
+      <p class="tier-name">${tier.name}</p>
+      <p class="tier-desc">${tier.desc}</p>
+      <button class="btn-primary" id="toLeaderboard">Ver tabla de posiciones</button>
+      <button class="btn-ghost" id="playAgain">Jugar de nuevo</button>
+    </div>
+  `;
+}
+
+function renderLeaderboard(){
+  const rows = state.leaderboard;
+  let bodyHtml;
+  if(!rows.length){
+    bodyHtml = `<p class="lb-empty">Aún no hay resultados en esta sesión.</p>`;
+  } else {
+    bodyHtml = rows.map((r,i) => `
+      <div class="lb-row">
+        <span class="lb-rank">${i+1}</span>
+        <span class="lb-alias ${r.alias.toLowerCase()===state.alias.toLowerCase() ? "me":""}">${escapeHtml(r.alias)}</span>
+        <span class="lb-score">${r.score}/${r.total}</span>
+      </div>
+    `).join("");
+  }
+  return `
+    <div class="frame">
+      <div class="eyebrow">Sesión: ${escapeHtml(state.sessionCode)}</div>
+      <h1 style="font-size:21px;">Tabla de posiciones</h1>
+      <p class="subtitle" style="margin-bottom:14px;">${COURSE.title}</p>
+      ${bodyHtml}
+      <p class="lb-live">● en vivo</p>
+      <button class="btn-ghost" id="backHome">Salir</button>
+    </div>
+  `;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[s]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+
+function attachHandlers(){
+  if(state.screen === "join"){
+    const codeInput = document.getElementById("sessionCode");
+    const aliasInput = document.getElementById("alias");
+    document.getElementById("startBtn").addEventListener("click", () => {
+      const code = codeInput.value.trim();
+      const alias = aliasInput.value.trim();
+      if(!code || !alias){
+        document.getElementById("joinError").textContent = "Escribe el código de sesión y un apodo para continuar.";
+        return;
+      }
+      state.sessionCode = code;
+      state.alias = alias;
+      state.qIndex = 0;
+      state.correctCount = 0;
+      state.answered = false;
+      state.selected = null;
+      state.screen = "question";
+      render();
+    });
+  }
+  if(state.screen === "question"){
+    document.querySelectorAll(".option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if(state.answered) return;
+        const i = Number(btn.dataset.i);
+        state.selected = i;
+        state.answered = true;
+        if(i === COURSE.questions[state.qIndex].correct) state.correctCount++;
+        render();
+      });
+    });
+    const nextBtn = document.getElementById("nextBtn");
+    if(nextBtn){
+      nextBtn.addEventListener("click", async () => {
+        if(state.qIndex < COURSE.questions.length - 1){
+          state.qIndex++;
+          state.answered = false;
+          state.selected = null;
+          render();
+        } else {
+          await saveScore(state.alias, state.correctCount, COURSE.questions.length);
+          state.screen = "results";
+          render();
+        }
+      });
+    }
+  }
+  if(state.screen === "results"){
+    document.getElementById("toLeaderboard").addEventListener("click", () => {
+      state.screen = "leaderboard";
+      render();
+      startLeaderboardListener();
+    });
+    document.getElementById("playAgain").addEventListener("click", () => {
+      state.screen = "join";
+      render();
+    });
+  }
+  if(state.screen === "leaderboard"){
+    document.getElementById("backHome").addEventListener("click", () => {
+      stopLeaderboardListener();
+      state.screen = "join";
+      render();
+    });
+  } else {
+    stopLeaderboardListener();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
